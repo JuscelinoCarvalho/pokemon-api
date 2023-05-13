@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Import(PokemonApiApplicationConfig.class)
 @RestController
 @RequestMapping("")
-public class PokemonController  {
+public class PokemonController {
 
     @Autowired
     private final PokemonService pokemonService;
@@ -29,37 +29,13 @@ public class PokemonController  {
     }
 
 
-    @GetMapping("/ability/{pokemonName}")
-    public void getPokemonAbility(@PathVariable String pokemonName) throws IOException {
-        try {
-            URL url = new URL("https://pokeapi.co/api/v2/ability/" + URLEncoder.encode(pokemonName));
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            System.out.println("Response Code : " + responseCode);
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            System.out.println(response.toString());
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
-    }
-
     @GetMapping("/pokemon/{pokemonName}")
     public PokemonDTO getPokemon(@PathVariable String pokemonName)  /*throws IOException*/ {
         return pokemonService.getPokemon(pokemonName);
     }
 
     @GetMapping("/location/{pokemonName}")
-    public void getLocation(@PathVariable String pokemonName)  throws IOException {
+    public void getLocation(@PathVariable String pokemonName) throws IOException {
         try {
             URL url = new URL("https://pokeapi.co/api/v2/location/" + URLEncoder.encode(pokemonName));
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -77,14 +53,14 @@ public class PokemonController  {
             in.close();
 
             System.out.println(response.toString());
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
     @GetMapping("")
-    public String fetchingPokemonList(){
+    public String fetchingPokemonList() {
         AtomicReference<String> retString = new AtomicReference<>("");
         try {
             URL url = new URL("https://pokeapi.co/api/v2/pokemon?limit=151");
@@ -98,7 +74,7 @@ public class PokemonController  {
             String inputLine;
             StringBuffer response = new StringBuffer();
             while ((inputLine = in.readLine()) != null) {
-                if(inputLine != "Response Code : 200") {
+                if (inputLine != "Response Code : 200") {
                     response.append(inputLine);
                 }
             }
@@ -114,15 +90,11 @@ public class PokemonController  {
                         //System.out.println(retString.get());
                     }
             );
-        }catch (IOException e){
+        } catch (IOException e) {
             System.out.println("Ocorreu um erro!");
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
         return retString.get();
-    }
-
-    private static String getPokemonData(URL url){
-        return "url";
     }
 }

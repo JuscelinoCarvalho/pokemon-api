@@ -11,19 +11,11 @@ import java.util.List;
 @Builder
 public class PokemonDTO {
 
-    @JsonProperty("height")
-    private Double height;
-
-    @JsonProperty("id")
     private Double id;
-
-    @JsonProperty("location_area_encounters")
-    private String location_area_encounters;
-
-    @JsonProperty("name")
     private String name;
-
-    @JsonProperty("weight")
     private Double weight;
-
+    private Double height;
+    private List<String> stats;
+    private List<String> types;
+    private List<String> location_area_encounters;
 }
