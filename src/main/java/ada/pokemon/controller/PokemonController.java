@@ -1,7 +1,9 @@
 package ada.pokemon.controller;
 
 import ada.pokemon.PokemonApiApplicationConfig;
+import ada.pokemon.dto.BattleResultDTO;
 import ada.pokemon.dto.PokemonDTO;
+import ada.pokemon.dto.PokemonFormsDTO;
 import ada.pokemon.service.PokemonService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,6 +16,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Import(PokemonApiApplicationConfig.class)
@@ -30,36 +33,22 @@ public class PokemonController {
 
 
     @GetMapping("/pokemon/{pokemonName}")
-    public PokemonDTO getPokemon(@PathVariable String pokemonName)  /*throws IOException*/ {
+    public PokemonDTO getPokemon(@PathVariable String pokemonName)  {
         return pokemonService.getPokemon(pokemonName);
     }
 
-    @GetMapping("/location/{pokemonName}")
-    public void getLocation(@PathVariable String pokemonName) throws IOException {
-        try {
-            URL url = new URL("https://pokeapi.co/api/v2/location/" + URLEncoder.encode(pokemonName));
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            System.out.println("Response Code : " + responseCode);
+    @GetMapping("/forms/{pokemonName}")
+    public PokemonFormsDTO getPokemonForms(@PathVariable String pokemonName)  {
+        return pokemonService.getPokemonForms(pokemonName);
+    }
 
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            System.out.println(response.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @PostMapping ("/compare/{pokemonChallengerName}/{pokemonChallengedName}")
+    public BattleResultDTO battleStatisticPokemon(@PathVariable String pokemonChallengerName, @PathVariable String pokemonChallengedName){
+        return pokemonService.pokemonBattleService(pokemonChallengerName, pokemonChallengedName);
     }
 
 
-    @GetMapping("")
+    @GetMapping("/")
     public String fetchingPokemonList() {
         AtomicReference<String> retString = new AtomicReference<>("");
         try {

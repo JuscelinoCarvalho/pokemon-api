@@ -15,16 +15,4 @@ public class PokemonApiApplicationConfig {
         return new RestTemplate();
     }
 
-
-/*
-    @Bean
-    public ClientBuilder clientBuilder() {
-        return ClientBuilder.newBuilder();
-    }
-
-    @Bean
-    public MapperPokemon mapperPokemon(){
-        return new MapperPokemon();
-    }
-    */
 }

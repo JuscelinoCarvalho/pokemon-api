@@ -1,9 +1,11 @@
 package ada.pokemon.service;
 
 import ada.pokemon.PokemonApiApplicationConfig;
+import ada.pokemon.dto.BattleResultDTO;
 import ada.pokemon.dto.PokemonDTO;
-import ada.pokemon.dto.PokemonInterface;
+import ada.pokemon.dto.PokemonFormsDTO;
 import ada.pokemon.mapper.MapperPokemon;
+import ada.pokemon.util.BattleResult;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Service;
@@ -19,16 +21,10 @@ import com.google.gson.Gson;
 
 @Service
 @Import(PokemonApiApplicationConfig.class)
-public class PokemonService implements PokemonInterface {
-
-    private static final String POKEAPI_BASE_URL = "https://pokeapi.co/api/v2/";
-    private final RestTemplate restTemplate;
+public class PokemonService  {
 
     public PokemonService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
     }
-
-    private static PokemonDTO pokemonDTO;
 
     public static StringBuffer getUrlReturn(String pUrl) {
         try {
@@ -56,13 +52,51 @@ public class PokemonService implements PokemonInterface {
         }
     }
 
-    @Override
-    public PokemonDTO getPokemon(String pokemonName) {
+    public static PokemonDTO getPokemon(String pokemonName) {
         String url = "pokemon/" + pokemonName;
         String response = String.valueOf(getUrlReturn(url));
         MapperPokemon mapperPokemon = new MapperPokemon();
         return mapperPokemon.ResponseToPokemnonDTO(new JSONObject(response));
     }
+
+    public static PokemonFormsDTO getPokemonForms(String pokemonName){
+        String url = "pokemon/" + pokemonName;
+        String response = String.valueOf(getUrlReturn(url));
+        MapperPokemon mapperPokemon = new MapperPokemon();
+        return mapperPokemon.ResponseToPokemonFormsDTO(new JSONObject(response));
+    }
+
+    private static Integer evaluatePokemon(String pokemonName){
+        PokemonDTO pokemonDTO = getPokemon(pokemonName);
+        PokemonFormsDTO pokemonFormsDTO = getPokemonForms(pokemonName);
+
+        Integer result = (int) (pokemonDTO.getTypes().size() + pokemonDTO.getLocation_area_encounters().size() +
+                        pokemonDTO.getTypes().size() + pokemonDTO.getHeight() + pokemonDTO.getWeight());
+
+        result += pokemonFormsDTO.getForms().size();
+
+        return result;
+
+    };
+
+
+    public BattleResultDTO pokemonBattleService(String challengerPokemonName, String challengedPokemonName){
+
+        Integer challengerResult = evaluatePokemon(challengerPokemonName);
+        Integer challengedResult = evaluatePokemon(challengedPokemonName);
+        BattleResultDTO result;
+
+        if (challengerResult > challengedResult) {
+            result = BattleResultDTO.builder().pokemonName(challengerPokemonName).fightResult(BattleResult.WINNER).build();
+        } else if(challengerResult < challengedResult){
+            result = BattleResultDTO.builder().pokemonName(challengedPokemonName).fightResult(BattleResult.WINNER).build();
+        }else{
+            result = BattleResultDTO.builder().pokemonName(challengerPokemonName).fightResult(BattleResult.DRAW).build();
+        }
+
+        return result;
+    }
+
 
     public static Map<String, Object> getFirstLevelKeysAndValues(String json) {
         Gson gson = new Gson();

@@ -1,18 +1,17 @@
 package ada.pokemon.mapper;
 
 
-import ada.pokemon.service.PokemonService;
+import ada.pokemon.dto.PokemonFormsDTO;
 import ada.pokemon.dto.PokemonDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class MapperPokemon {
 
@@ -110,5 +109,36 @@ public class MapperPokemon {
             return lstRet;
         }
     }
+
+    public PokemonFormsDTO ResponseToPokemonFormsDTO(JSONObject jsonObject){
+        String errorMessage = "";
+        try{
+
+            JSONArray myArray = jsonObject.getJSONArray("forms");
+            JSONObject myObject = new JSONObject();
+            myObject.put("forms", myArray);
+            List<String> lstFormName = new ArrayList<>();
+
+            for(Object name : myArray){
+                lstFormName.add(String.valueOf( ((JSONObject) name).get("name")));
+            }
+
+            return PokemonFormsDTO.builder()
+                    .forms(lstFormName)
+                    .build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            errorMessage = e.getMessage();
+            List<String> retList = new ArrayList<>();
+            retList.add(errorMessage);
+
+            return PokemonFormsDTO.builder()
+                    .forms(retList)
+                    .build();
+        }
+
+    }
+
 
 }
