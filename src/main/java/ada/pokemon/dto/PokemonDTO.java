@@ -18,4 +18,5 @@ public class PokemonDTO {
     private List<String> stats;
     private List<String> types;
     private List<String> location_area_encounters;
+    private Integer sumOfStats;
 }

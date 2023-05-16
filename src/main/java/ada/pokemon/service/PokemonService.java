@@ -53,10 +53,34 @@ public class PokemonService  {
     }
 
     public static PokemonDTO getPokemon(String pokemonName) {
-        String url = "pokemon/" + pokemonName;
-        String response = String.valueOf(getUrlReturn(url));
-        MapperPokemon mapperPokemon = new MapperPokemon();
-        return mapperPokemon.ResponseToPokemnonDTO(new JSONObject(response));
+        try{
+            String url = "pokemon/" + pokemonName;
+            String response = String.valueOf(getUrlReturn(url));
+            MapperPokemon mapperPokemon = new MapperPokemon();
+            PokemonDTO pokemonDTO = mapperPokemon.ResponseToPokemnonDTO(new JSONObject(response));
+            List<String> statNames = new ArrayList<>();
+            final Integer[] sumOfStats = {0};
+
+            pokemonDTO.getStats().forEach(
+                    poke -> {
+                        JSONObject jsonObject = new JSONObject(poke);
+                        statNames.add(jsonObject.get("name").toString());
+                        sumOfStats[0] = sumOfStats[0] + jsonObject.getInt("base_stat");
+                    }
+            );
+
+            pokemonDTO.setStats(statNames);
+            pokemonDTO.setSumOfStats(sumOfStats[0]);
+
+            return pokemonDTO ;
+        }catch (Exception ex){
+            PokemonDTO pokemonDTO = PokemonDTO.builder()
+                    .id(-1)
+                    .name(ex.getMessage())
+                    .build();
+            return pokemonDTO;
+        }
+
     }
 
     public static PokemonFormsDTO getPokemonForms(String pokemonName){
@@ -66,24 +90,11 @@ public class PokemonService  {
         return mapperPokemon.ResponseToPokemonFormsDTO(new JSONObject(response));
     }
 
-    private static Integer evaluatePokemon(String pokemonName){
-        PokemonDTO pokemonDTO = getPokemon(pokemonName);
-        PokemonFormsDTO pokemonFormsDTO = getPokemonForms(pokemonName);
-
-        Integer result = (int) (pokemonDTO.getTypes().size() + pokemonDTO.getLocation_area_encounters().size() +
-                        pokemonDTO.getTypes().size() + pokemonDTO.getHeight() + pokemonDTO.getWeight());
-
-        result += pokemonFormsDTO.getForms().size();
-
-        return result;
-
-    };
-
 
     public BattleResultDTO pokemonBattleService(String challengerPokemonName, String challengedPokemonName){
 
-        Integer challengerResult = evaluatePokemon(challengerPokemonName);
-        Integer challengedResult = evaluatePokemon(challengedPokemonName);
+        Integer challengerResult = getPokemon(challengerPokemonName).getSumOfStats();
+        Integer challengedResult = getPokemon(challengedPokemonName).getSumOfStats();
         BattleResultDTO result;
 
         if (challengerResult > challengedResult) {

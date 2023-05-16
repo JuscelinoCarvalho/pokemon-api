@@ -56,24 +56,29 @@ public class MapperPokemon {
     public List<String> getTypes(JSONObject jsonObject) {
         List<String> retList = new ArrayList<>();
         JSONArray myArray = jsonObject.getJSONArray("types");
-        JSONObject myObject = new JSONObject();
-        myObject.put("types", myArray);
 
-        for (Object nome : myObject.getJSONArray("types")) {
-            retList.add(String.valueOf(((JSONObject) nome).getJSONObject("type").get("name")));
+
+
+        for(int i=0; i < myArray.length(); ++i){
+            JSONObject myObject = myArray.getJSONObject(i);
+            retList.add(myObject.getJSONObject("type").get("name").toString());
         }
+
+
+
         return retList;
     }
 
     public List<String> getStats(JSONObject jsonObject){
         List<String> retList = new ArrayList<>();
         JSONArray myArray = jsonObject.getJSONArray("stats");
-        JSONObject myObject = new JSONObject();
-        myObject.put("stats", myArray);
 
-        for (Object nome : myObject.getJSONArray("stats")) {
-            retList.add(String.valueOf(((JSONObject) nome).getJSONObject("stat").get("name")));
+        for(int i = 0; i < myArray.length(); ++i){
+            JSONObject myObject = myArray.getJSONObject(i).getJSONObject("stat");
+            myObject.put("base_stat", myArray.getJSONObject(i).get("base_stat"));
+            retList.add(myObject.toString());
         }
+
         return retList;
     }
 
@@ -97,10 +102,18 @@ public class MapperPokemon {
             }
             in.close();
 
-            for ( Object jobj :  new JSONArray(response.toString())  ) {
-                lstRet.add(((JSONObject)jobj).getJSONObject("location_area").get("name").toString());
+            JSONArray jsonArray = new JSONArray(response.toString());
+
+            for(int i = 0; i < jsonArray.length(); ++i){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+               lstRet.add(String.valueOf(jsonObject.getJSONObject("location_area").get("name")));
             }
 
+/*
+            for (Object jobj :  new JSONArray(response.toString())) {
+                lstRet.add(((JSONObject)jobj).getJSONObject("location_area").get("name").toString());
+            }
+*/
 
             return lstRet;
         } catch (Exception e) {
@@ -115,12 +128,11 @@ public class MapperPokemon {
         try{
 
             JSONArray myArray = jsonObject.getJSONArray("forms");
-            JSONObject myObject = new JSONObject();
-            myObject.put("forms", myArray);
             List<String> lstFormName = new ArrayList<>();
 
-            for(Object name : myArray){
-                lstFormName.add(String.valueOf( ((JSONObject) name).get("name")));
+            for(int i = 0; i < myArray.length(); ++i){
+                JSONObject myObject = myArray.getJSONObject(i);
+                lstFormName.add(myObject.get("name").toString());
             }
 
             return PokemonFormsDTO.builder()

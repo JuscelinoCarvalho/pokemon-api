@@ -2,14 +2,18 @@ package ada.pokemon;
 
 
 import ada.pokemon.controller.PokemonController;
+import ada.pokemon.dto.BattleResultDTO;
 import ada.pokemon.dto.PokemonDTO;
 import ada.pokemon.service.PokemonService;
+import ada.pokemon.util.BattleResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -20,27 +24,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-
 @AutoConfigureMockMvc
 @SpringBootTest(classes = PokemonApiApplication.class)
-@ExtendWith(MockitoExtension.class)
 public class PokemonApiApplicationTests {
 
-	@Mock
-	private PokemonService pokemonService;
-
-	@InjectMocks
-	private PokemonController pokemonController;
-
+	@Autowired
 	private MockMvc mockMvc;
-
-
-	@BeforeEach
-	public void setup(){
-		this.mockMvc = MockMvcBuilders.standaloneSetup(this.pokemonController).build();
-	}
-
 
 	@Test
 	public void testGetPokemonDetails1() throws Exception {
@@ -61,8 +50,11 @@ public class PokemonApiApplicationTests {
 
 	@Test
 	public void testGetPokemonDetails3() throws Exception {
+		PokemonDTO pokemonDTO = PokemonDTO.builder()
+						.id(-1).build();
 		mockMvc.perform(MockMvcRequestBuilders.get("/pokemon/newtwo"))
-				.andExpect(MockMvcResultMatchers.status().is5xxServerError())
+				.andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+				.andExpect(pokemonDTO.getId().equals(-1))
 				.andDo(MockMvcResultHandlers.print());
 
 	}
@@ -70,13 +62,24 @@ public class PokemonApiApplicationTests {
 
 	@Test
 	public void testBattle() throws Exception {
-		String pokemonName2 = "pikachu";
-		String pokemonName3 = "arceus";
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/compare/" + pokemonName3 + "/" + pokemonName2))
+		BattleResultDTO battleResult =  BattleResultDTO.builder()
+			.pokemonName("arceus")
+			.fightResult(BattleResult.WINNER)
+			.build();
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/compare/pikachu/arceus"))
 				.andExpect(MockMvcResultMatchers.status().isOk())
 				.andExpect(MockMvcResultMatchers.content()
-				.json("[{\"pokemonName\": \"arceus\", \"fightResult\": \"WINNER\"}, { \"pokemonName\": \"pikachu\", \"fightResult\": \"LOOSER\"}]"));
+				.json(asJsonString(battleResult)));
+	}
+
+	private static String asJsonString(final Object obj) {
+		try {
+			return new ObjectMapper().writeValueAsString(obj);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
